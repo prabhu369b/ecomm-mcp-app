@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from core.logger import Logger
+from app.core.logger import Logger
 
 Logger.configure()
 
-from services.redis import redis
-from services.mongo import mongo
+from app.services.redis import redis
+from app.database.mongo import mongo
 
 @asynccontextmanager
 async def lifespan(app = FastAPI):
@@ -13,10 +13,12 @@ async def lifespan(app = FastAPI):
     logger = Logger.get_logger(__name__)
     logger.info("Application Started")
 
+    redis.redis  # force-connect now instead of on first request
+    mongo.client
+
     app.state.redis = redis
     app.state.mongo = mongo
 
-   
     yield
     
     redis.close()

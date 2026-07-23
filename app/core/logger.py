@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
-from config.settings import get_settings
+from app.config.settings import get_settings
 import colorlog
 from pythonjsonlogger.json import JsonFormatter
 from pathlib import Path
