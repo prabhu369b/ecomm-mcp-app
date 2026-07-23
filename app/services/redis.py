@@ -1,23 +1,27 @@
+from functools import cached_property
 import redis as r
 from redis.cache import CacheConfig
-from config.settings import get_settings
-from core.logger import Logger
+from app.config.settings import get_settings
+from app.core.logger import Logger
 
 logger = Logger.get_logger(__name__)
 
 
-class RedisService: 
-    def __init__(self):
+class RedisService:
+    @cached_property
+    def redis(self) -> r.Redis:
         settings = get_settings()
-        self.redis = r.Redis(host=settings.redis.host, port=settings.redis.port, decode_responses=True, cache_config=CacheConfig())
+        client = r.Redis(host=settings.redis.host, port=settings.redis.port, decode_responses=True, cache_config=CacheConfig())
         try:
-            self.redis.ping()
+            client.ping()
             logger.info("Redis Connected")
         except ConnectionError:
             logger.exception("Failed to connect to Redis")
             raise
+        return client
+
     def close(self):
-        if(self.redis is not None):
+        if "redis" in self.__dict__:
             self.redis.close()
             logger.info("Redis Closed")
 
