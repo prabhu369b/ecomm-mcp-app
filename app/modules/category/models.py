@@ -1,4 +1,4 @@
-from .common import MongoDocument
+from app.shared.common import MongoDocument
 from pydantic import BaseModel
 
 class Category(MongoDocument):

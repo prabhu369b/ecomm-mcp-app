@@ -1,10 +1,9 @@
-from .common import MongoDocument
-from bson import ObjectId
+from app.shared.common import MongoDocument
 from pydantic import BaseModel
 
 class Product(MongoDocument):
     name: str
-    category_id: ObjectId
+    category_id: str
     price: int
     stock: int
     description: str
