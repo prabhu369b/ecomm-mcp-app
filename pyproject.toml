@@ -1,0 +1,17 @@
+[project]
+name = "mcp-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "colorlog>=6.11.0",
+    "fastapi[standard]>=0.139.2",
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.28.1",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "pymongo>=4.17.0",
+    "python-json-logger>=4.1.0",
+    "redis>=8.0.1",
+]
