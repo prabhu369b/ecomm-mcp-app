@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status, Request
-from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext, RefreshTokenRequest
+from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext, RefreshTokenRequest, LogoutRequest
 from app.modules.auth.service import AuthService
 from app.modules.auth.dependency import get_auth_service, get_current_user
 from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidAccessToken, AccessTokenExpired
@@ -33,9 +33,11 @@ async def login(
     body: LoginRequest,
     service: AuthService = Depends(get_auth_service)
 ):
+    fwd = request.headers.get("X-Forwarded-For")
+    ip = fwd.split(",")[0].strip() if fwd else request.client.host
     context = LoginContext(
         device=body.device,
-        ip_address=request.client.host,
+        ip_address=ip,
         user_agent=request.headers.get("User-Agent", ""),
     )
 
@@ -62,7 +64,7 @@ async def me(current_user: AuthenticatedUser = Depends(get_current_user)):
     )
 
 @router.post("/refresh",
-             response_model=LoginResponse,
+             response_model=ApiResponse[LoginResponse],
              status_code=status.HTTP_200_OK
 )
 async def refresh(request: RefreshTokenRequest, service: AuthService = Depends(get_auth_service)):
@@ -75,3 +77,17 @@ async def refresh(request: RefreshTokenRequest, service: AuthService = Depends(g
         message="Token Refreshed Successfully",
         data=response
     )
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def logout(
+    request: LogoutRequest, 
+    service: AuthService = Depends(get_auth_service)            
+):
+    service.logout(
+        request.refresh_token
+    )
+
+    

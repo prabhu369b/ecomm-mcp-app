@@ -102,5 +102,10 @@ class AuthService:
         return LoginResponse(
             access_token=access,
             refresh_token=refresh,
+            token_type="Bearer",
             expires_in=settings.jwt.access_token_expiry
         )
+    
+    def logout(self, refresh_token: str):
+        self.token_service.revoke_refresh_token(refresh_token)
+

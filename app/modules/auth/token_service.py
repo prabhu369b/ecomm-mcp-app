@@ -120,7 +120,7 @@ class TokenService:
 
     def revoke_refresh_token(self, refresh_token: str):
         self.redis.delete(self._refresh_key(refresh_token))
-
+    
     def hash_refresh_token(self, refresh_token: str) -> str:
 
         return hmac.new(

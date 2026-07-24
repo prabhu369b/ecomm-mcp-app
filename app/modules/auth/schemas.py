@@ -46,6 +46,9 @@ class LoginResponse(BaseModel):
     token_type: str = "Bearer"
     expires_in: int
 
+class LogoutRequest(BaseModel):
+    refresh_token: str
+
 class AccessTokenPayload(BaseModel):
     sub: str
     iat: datetime
