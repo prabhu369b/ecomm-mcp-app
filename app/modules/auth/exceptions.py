@@ -32,3 +32,7 @@ class InvalidAccessToken(AppException):
 class AccessTokenExpired(AppException):
     status_code = status.HTTP_401_UNAUTHORIZED
     message = "Access token expired" 
+
+class InvalidRefreshToken(AppException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    message = "Invalid Refresh Token"

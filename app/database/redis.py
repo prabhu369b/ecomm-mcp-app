@@ -31,4 +31,11 @@ class RedisService:
     def delete(self, key):
         self.client.delete(key)
 
+    def pipeline(self):
+        return self.client.pipeline()
+
+    def lock(self, key, timeout=10, blocking_timeout=5):
+        # Swap to Redlock only if you run multiple independent Redis masters.
+        return self.client.lock(f"lock:{key}", timeout=timeout, blocking_timeout=blocking_timeout)
+
 redis = RedisService()

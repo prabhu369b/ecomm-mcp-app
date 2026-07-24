@@ -2,7 +2,7 @@ from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest
 from app.modules.user.repository import UserRepository
 from app.modules.auth.password import PasswordService
 from app.modules.user.models import User
-from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled
+from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken
 from app.modules.auth.token_service import TokenService
 from app.config.settings import get_settings
 
@@ -74,4 +74,33 @@ class AuthService:
             refresh_token=refresh_token,
             expires_in=settings.jwt.access_token_expiry
         )
-        
+
+    def refresh(self, refresh_token: str) -> LoginResponse:
+
+        with self.token_service.lock(refresh_token):
+
+            session = self.token_service.verify_refresh_token(refresh_token)
+
+            user = self.user_repo.find_by_id(session.user_id)
+
+            if not user:
+                raise InvalidRefreshToken()
+
+            if not user.is_active:
+                raise UserDisabled()
+
+            access = self.token_service.create_access_token(str(user.id))
+
+            refresh = self.token_service.rotate_refresh_token(
+                old_token=refresh_token,
+                user_id=str(user.id),
+                device=session.device,
+                ip_address=session.ip_address,
+                user_agent=session.user_agent,
+            )
+
+        return LoginResponse(
+            access_token=access,
+            refresh_token=refresh,
+            expires_in=settings.jwt.access_token_expiry
+        )

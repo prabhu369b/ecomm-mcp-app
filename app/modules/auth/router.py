@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status, Request
-from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext
+from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext, RefreshTokenRequest
 from app.modules.auth.service import AuthService
 from app.modules.auth.dependency import get_auth_service, get_current_user
 from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidAccessToken, AccessTokenExpired
@@ -59,4 +59,19 @@ async def me(current_user: AuthenticatedUser = Depends(get_current_user)):
         success=True,
         message="Profile Fetched",
         data=current_user
+    )
+
+@router.post("/refresh",
+             response_model=LoginResponse,
+             status_code=status.HTTP_200_OK
+)
+async def refresh(request: RefreshTokenRequest, service: AuthService = Depends(get_auth_service)):
+    response = service.refresh(
+        request.refresh_token
+    )
+
+    return ApiResponse(
+        success=True,
+        message="Token Refreshed Successfully",
+        data=response
     )

@@ -21,6 +21,8 @@ class JWTConfig(BaseModel):
 
     secret: str
 
+    refresh_secret: str
+
     algorithm: str = "HS256"
 
     access_token_expiry: int = 900      # 15 min
