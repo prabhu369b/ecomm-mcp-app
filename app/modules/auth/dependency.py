@@ -8,21 +8,29 @@ from app.modules.auth.token_service import TokenService
 from app.modules.auth.exceptions import InvalidAccessToken
 from app.modules.user.exceptions import UserDisabled
 from app.modules.auth.schemas import AuthenticatedUser
+from app.modules.auth.session.repository import SessionRepository
+from app.database.mongo import MongoService
+from app.database.redis import RedisService
+from app.database.lock import RedisLockService
 
 
 def get_auth_service(
-    mongo = Depends(get_mongo),
-    redis = Depends(get_redis)
+    mongo: MongoService = Depends(get_mongo),
+    redis: RedisService = Depends(get_redis)
     ):
-    
-    repo = UserRepository(mongo)
+
+    user_repo = UserRepository(mongo)
     password = PasswordService()
-    token = TokenService(redis)
+    token = TokenService()
+    session_repo = SessionRepository(redis)
+    lock_service = RedisLockService(redis)
 
     return AuthService(
-        user_repo=repo,
+        user_repo=user_repo,
+        session_repo=session_repo,
         password_service=password,
-        token_service=token
+        token_service=token,
+        lock_service=lock_service
     )
 
 oauth2_schema = OAuth2PasswordBearer(
@@ -33,10 +41,9 @@ oauth2_schema = OAuth2PasswordBearer(
 def get_current_user(
   token: str = Depends(oauth2_schema),
   mongo = Depends(get_mongo),
-  redis = Depends(get_redis)
 ):
     repo = UserRepository(mongo)
-    token_service = TokenService(redis)
+    token_service = TokenService()
 
     payload = token_service.verify_access_token(
         token=token

@@ -1,18 +1,25 @@
-from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext
+from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext, SessionData
 from app.modules.user.repository import UserRepository
 from app.modules.auth.password import PasswordService
 from app.modules.user.models import User
 from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken
 from app.modules.auth.token_service import TokenService
 from app.config.settings import get_settings
+from app.modules.auth.session.repository import SessionRepository
+from app.core.utils.id_generator import IdGenerator
+from app.database.lock import RedisLockService
+from app.modules.auth.session.keys import SessionKeys
+from datetime import datetime, timezone
 
 settings = get_settings()
 class AuthService:
 
-    def __init__(self, user_repo: UserRepository, password_service: PasswordService, token_service: TokenService):
+    def __init__(self, user_repo: UserRepository, session_repo: SessionRepository, password_service: PasswordService, token_service: TokenService, lock_service: RedisLockService):
         self.user_repo = user_repo
         self.password = password_service
         self.token_service = token_service
+        self.session_repo = session_repo
+        self.lock_service = lock_service
     
     def register(self, request: RegisterRequest):
         
@@ -58,16 +65,30 @@ class AuthService:
         #     raise EmailNotVerified()
         
         
+        session_id = IdGenerator.session_id()
         
-        token = self.token_service.create_access_token(str(user.id))
+        token = self.token_service.create_access_token(user_id=str(user.id), session_id=session_id)
         
-        refresh_token = self.token_service.create_refresh_token(
-            user_id=str(user.id), 
+        refresh_token = self.token_service.generate_refresh_token()
+
+        refresh_hash = self.token_service.hash_refresh_token(
+            refresh_token
+        )
+
+        now = datetime.now(timezone.utc).isoformat()
+
+        session = SessionData(
+            session_id=session_id,
+            user_id=str(user.id),
+            refresh_hash=refresh_hash,
             device=context.device,
             ip_address=context.ip_address,
-            user_agent=context.user_agent
+            user_agent=context.user_agent,
+            created_at=now,
+            last_used_at=now,
         )
         
+        self.session_repo.create(session=session)
 
         return LoginResponse(
             access_token=token,
@@ -77,35 +98,53 @@ class AuthService:
 
     def refresh(self, refresh_token: str) -> LoginResponse:
 
-        with self.token_service.lock(refresh_token):
+        refresh_hash = self.token_service.hash_refresh_token(refresh_token)
 
-            session = self.token_service.verify_refresh_token(refresh_token)
+        session = self.session_repo.find_by_refresh_hash(refresh_hash)
 
-            user = self.user_repo.find_by_id(session.user_id)
+        if not session:
+            raise InvalidRefreshToken()
 
-            if not user:
-                raise InvalidRefreshToken()
+        user = self.user_repo.find_by_id(session.user_id)
 
-            if not user.is_active:
-                raise UserDisabled()
+        if not user:
+            raise InvalidRefreshToken()
 
-            access = self.token_service.create_access_token(str(user.id))
+        if not user.is_active:
+            raise UserDisabled()
 
-            refresh = self.token_service.rotate_refresh_token(
-                old_token=refresh_token,
-                user_id=str(user.id),
-                device=session.device,
-                ip_address=session.ip_address,
-                user_agent=session.user_agent,
+        with self.lock_service.acquire(SessionKeys.session(session.session_id)):
+
+            new_refresh = self.token_service.generate_refresh_token()
+
+            new_hash = self.token_service.hash_refresh_token(
+                new_refresh
             )
+
+            self.session_repo.rotate(
+                session=session,
+                old_hash=refresh_hash,
+                new_hash=new_hash,
+            )
+
+        access = self.token_service.create_access_token(
+            user_id=str(user.id),
+            session_id=session.session_id,
+        )
 
         return LoginResponse(
             access_token=access,
-            refresh_token=refresh,
+            refresh_token=new_refresh,
             token_type="Bearer",
             expires_in=settings.jwt.access_token_expiry
         )
-    
+
     def logout(self, refresh_token: str):
-        self.token_service.revoke_refresh_token(refresh_token)
+
+        refresh_hash = self.token_service.hash_refresh_token(refresh_token)
+
+        session = self.session_repo.find_by_refresh_hash(refresh_hash)
+
+        if session:
+            self.session_repo.revoke(session)
 

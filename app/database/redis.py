@@ -32,7 +32,7 @@ class RedisService:
         self.client.delete(key)
 
     def pipeline(self):
-        return self.client.pipeline()
+        return self.client.pipeline(transaction=True)
 
     def lock(self, key, timeout=10, blocking_timeout=5):
         # Swap to Redlock only if you run multiple independent Redis masters.

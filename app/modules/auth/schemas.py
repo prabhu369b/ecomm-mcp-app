@@ -51,6 +51,7 @@ class LogoutRequest(BaseModel):
 
 class AccessTokenPayload(BaseModel):
     sub: str
+    sid: str
     iat: datetime
     exp: datetime
     iss: str
@@ -69,7 +70,9 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 class SessionData(BaseModel):
+    session_id: str
     user_id: str
+    refresh_hash: str
     device: str
     ip_address: str
     user_agent: str
