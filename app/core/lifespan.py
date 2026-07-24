@@ -4,7 +4,7 @@ from app.core.logger import Logger
 
 Logger.configure()
 
-from app.services.redis import redis
+from app.database.redis import redis
 from app.database.mongo import mongo
 
 @asynccontextmanager
@@ -13,8 +13,7 @@ async def lifespan(app = FastAPI):
     logger = Logger.get_logger(__name__)
     logger.info("Application Started")
 
-    redis.redis  # force-connect now instead of on first request
-    mongo.client
+    mongo.client  # force-connect now instead of on first request
 
     app.state.redis = redis
     app.state.mongo = mongo

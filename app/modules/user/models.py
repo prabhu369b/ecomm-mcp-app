@@ -11,3 +11,6 @@ class User(MongoDocument):
     scopes: list[str] = Field(default_factory=lambda: ["product:read"])
 
     is_active: bool = True
+
+    # TODO Need to add Email Verification
+    # is_verified: bool = False

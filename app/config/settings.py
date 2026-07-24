@@ -1,5 +1,5 @@
 from functools import lru_cache
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,12 +16,38 @@ class LoggerConfig(BaseModel):
     level : str = "INFO"
     file: str | None = ".log/app.log"
 
+
+class JWTConfig(BaseModel):
+
+    secret: str
+
+    algorithm: str = "HS256"
+
+    access_token_expiry: int = 900      # 15 min
+
+    refresh_token_expiry: int = 604800  # 7 days
+
+    issuer: str = "auth-service"
+
+    audience: str = "mcp-api"
+
+    # @field_validator("secret")
+    # @classmethod
+    # def validate_secret(cls, value: str):
+
+    #     if(len(value)<256):
+    #         raise ValueError("Secret must greater than 256 characters")
+
+
+
 class Settings(BaseSettings):
     app_name: str
     debug: bool = False
     mongo : MongoConfig
     redis: RedisConfig
     log: LoggerConfig = Field(default_factory=LoggerConfig)
+    jwt: JWTConfig
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

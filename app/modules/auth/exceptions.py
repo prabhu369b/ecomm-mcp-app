@@ -24,3 +24,11 @@ class UserDisabled(AppException):
 class EmailNotVerified(AppException):
     status_code = status.HTTP_403_FORBIDDEN
     message = "Email address is not verified"
+
+class InvalidAccessToken(AppException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    message = "Invalid Access Token"
+
+class AccessTokenExpired(AppException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    message = "Access token expired" 

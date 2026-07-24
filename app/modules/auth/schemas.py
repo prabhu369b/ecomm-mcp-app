@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, field_validator
 import re
-
+from datetime import datetime
 
 class RegisterRequest(BaseModel):
     name: str
@@ -33,9 +33,42 @@ class UserResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    device: str
+
+class LoginContext(BaseModel):
+    device: str
+    ip_address: str
+    user_agent: str
 
 class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
     expires_in: int
+
+class AccessTokenPayload(BaseModel):
+    sub: str
+    iat: datetime
+    exp: datetime
+    iss: str
+    aud: str
+    jti: str
+
+class AuthenticatedUser(BaseModel):
+    user_id: str
+    name: str
+    username: str
+    email: EmailStr
+    roles: list[str]
+    scops: list[str]
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+class SessionData(BaseModel):
+    user_id: str
+    device: str
+    ip_address: str
+    user_agent: str
+    created_at: datetime
+    last_used_at: datetime
