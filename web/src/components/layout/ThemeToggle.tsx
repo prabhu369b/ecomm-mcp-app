@@ -1,3 +1,5 @@
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Sun02Icon, Moon02Icon } from '@hugeicons/core-free-icons';
 import { useThemeStore } from '@/stores/themeStore';
 
 export function ThemeToggle() {
@@ -5,10 +7,10 @@ export function ThemeToggle() {
   return (
     <button
       aria-label="Toggle theme"
-      className="rounded-md border border-border px-3 py-1.5 text-sm"
+      className="flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
-      {theme === 'dark' ? 'Light' : 'Dark'}
+      <HugeiconsIcon icon={theme === 'dark' ? Sun02Icon : Moon02Icon} size={16} />
     </button>
   );
 }

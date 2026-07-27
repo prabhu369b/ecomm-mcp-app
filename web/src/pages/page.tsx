@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Search01Icon, ShoppingCart01Icon } from '@hugeicons/core-free-icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -66,15 +68,22 @@ function HomePage() {
         <p className="text-sm text-muted-foreground">Browse the catalog</p>
       </div>
 
-      <Input
-        placeholder="Search products…"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setPage(1);
-        }}
-        className="mb-6 h-9 max-w-sm text-sm"
-      />
+      <div className="relative mb-6 max-w-sm">
+        <HugeiconsIcon
+          icon={Search01Icon}
+          size={14}
+          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          placeholder="Search products…"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 pl-8 text-sm"
+        />
+      </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
       {isError && <p className="text-sm text-destructive">Failed to load products.</p>}
@@ -113,6 +122,7 @@ function HomePage() {
                     addToCart.mutate({ productId: product.id, qty: 1 });
                   }}
                 >
+                  <HugeiconsIcon icon={ShoppingCart01Icon} size={13} />
                   Add to cart
                 </Button>
               </div>

@@ -1,4 +1,6 @@
 import { Menu } from '@base-ui/react/menu';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ShoppingCart01Icon, Package01Icon, UserAccountIcon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { callApi } from '@/utils/api';
@@ -37,26 +39,30 @@ export function AccountMenu() {
             )}
             <Menu.Item
               render={<a href="/app/cart" />}
-              className="flex cursor-pointer items-center rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
+              className="flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
             >
+              <HugeiconsIcon icon={ShoppingCart01Icon} size={14} />
               Cart
             </Menu.Item>
             <Menu.Item
               render={<a href="/app/orders" />}
-              className="flex cursor-pointer items-center rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
+              className="flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
             >
+              <HugeiconsIcon icon={Package01Icon} size={14} />
               Orders
             </Menu.Item>
             <Menu.Item
               render={<a href="/app/account" />}
-              className="flex cursor-pointer items-center rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
+              className="flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs data-[highlighted]:bg-muted"
             >
+              <HugeiconsIcon icon={UserAccountIcon} size={14} />
               Account
             </Menu.Item>
             <Menu.Item
               onClick={handleLogout}
-              className="flex cursor-pointer items-center rounded-sm px-2.5 py-1.5 text-xs text-destructive data-[highlighted]:bg-destructive/10"
+              className="flex cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-destructive data-[highlighted]:bg-destructive/10"
             >
+              <HugeiconsIcon icon={Logout01Icon} size={14} />
               Log out
             </Menu.Item>
           </Menu.Popup>
