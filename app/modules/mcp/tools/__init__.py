@@ -1,3 +1,3 @@
-from app.modules.mcp.tools import products
+from app.modules.mcp.tools import products, cart
 
-__all__ = ["products"]
+__all__ = ["products", "cart"]
