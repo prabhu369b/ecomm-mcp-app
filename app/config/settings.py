@@ -45,6 +45,7 @@ class JWTConfig(BaseModel):
 class Settings(BaseSettings):
     app_name: str
     debug: bool = False
+    base_url: str = "http://localhost:8000"
     mongo : MongoConfig
     redis: RedisConfig
     log: LoggerConfig = Field(default_factory=LoggerConfig)

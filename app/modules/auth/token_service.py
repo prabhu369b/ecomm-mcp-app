@@ -20,7 +20,14 @@ class TokenService:
 
         self.algorithm = settings.jwt.algorithm
 
-    def create_access_token(self, user_id: str, session_id: str):
+    def create_access_token(
+        self,
+        user_id: str,
+        session_id: str,
+        *,
+        scope: str | None = None,
+        client_id: str | None = None,
+    ):
 
         now = datetime.now(timezone.utc)
 
@@ -35,7 +42,9 @@ class TokenService:
             "exp": expires,
             "iss": settings.jwt.issuer,
             "aud": settings.jwt.audience,
-            "jti": str(uuid.uuid4())
+            "jti": str(uuid.uuid4()),
+            "scope": scope,
+            "client_id": client_id,
         }
 
         return jwt.encode(

@@ -1,6 +1,6 @@
+from pydantic import BaseModel, HttpUrl
 from datetime import datetime
-from pydantic import HttpUrl
-from shared.common import MongoDocument
+from app.shared.common import MongoDocument
 
 class OAuthClient(MongoDocument):
     client_id: str
@@ -11,3 +11,14 @@ class OAuthClient(MongoDocument):
     grant_types: list[str]
     response_types: list[str]
     is_confidential: bool
+
+class AuthorizationCode(BaseModel):
+    code: str
+    client_id: str
+    user_id: str
+    redirect_uri: str
+    scopes: list[str]
+    code_challenge: str | None = None
+    code_challenge_method: str | None = None
+    expires_at: datetime
+    created_at: datetime

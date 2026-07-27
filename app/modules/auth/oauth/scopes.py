@@ -1,0 +1,3 @@
+PRODUCTS_READ = "products:read"
+
+SUPPORTED_SCOPES = [PRODUCTS_READ]

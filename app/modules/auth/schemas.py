@@ -57,6 +57,8 @@ class AccessTokenPayload(BaseModel):
     iss: str
     aud: str
     jti: str
+    scope: str | None = None
+    client_id: str | None = None
 
 class AuthenticatedUser(BaseModel):
     user_id: str
