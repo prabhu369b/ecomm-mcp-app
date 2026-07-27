@@ -30,7 +30,7 @@ async def add_item(
     data = await service.add_item(user.user_id, body.product_id, body.qty)
     return ApiResponse(success=True, message="Item added", data=data)
 
-@router.patch("items/{product_id}", response_model=ApiResponse[CartResponse])
+@router.patch("/items/{product_id}", response_model=ApiResponse[CartResponse])
 async def update_item(
     product_id: str, 
     body: CartItemRequest,
@@ -40,7 +40,7 @@ async def update_item(
     data = await service.update_item(user.user_id, product_id, body.qty)
     return ApiResponse(success=True, message="Item updated", data=data)
 
-@router.delete("items/{product_id}", response_model=ApiResponse[CartResponse])
+@router.delete("/items/{product_id}", response_model=ApiResponse[CartResponse])
 async def remove_cart_item(
     product_id: str, 
     user: AuthenticatedUser = Depends(get_current_user),
