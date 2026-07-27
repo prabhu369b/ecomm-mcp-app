@@ -61,13 +61,16 @@ function AuthorizePage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-muted/40 to-background p-6">
+      <Card className="w-full max-w-sm border-border/60 shadow-lg shadow-black/[0.03]">
         <CardHeader>
-          <CardTitle>Authorize access</CardTitle>
+          <span className="mb-1 inline-flex size-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+            E
+          </span>
+          <CardTitle className="text-lg">Authorize access</CardTitle>
           {result?.client_name && (
             <CardDescription>
-              <strong>{result.client_name}</strong> wants to access your account
+              <strong className="text-foreground">{result.client_name}</strong> wants to access your account
             </CardDescription>
           )}
         </CardHeader>
@@ -82,9 +85,12 @@ function AuthorizePage() {
             </p>
           )}
           {result && !decision && (
-            <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <ul className="flex flex-col gap-1.5 text-xs text-muted-foreground">
               {result.scopes.map((scope) => (
-                <li key={scope}>• {scope}</li>
+                <li key={scope} className="flex items-center gap-2">
+                  <span className="size-1.5 shrink-0 rounded-full bg-primary" />
+                  {scope}
+                </li>
               ))}
             </ul>
           )}

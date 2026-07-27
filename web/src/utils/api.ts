@@ -7,6 +7,11 @@ interface ApiEnvelope<T> {
   data: T;
 }
 
+interface RefreshResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
 export class ApiError extends Error {
   status: number;
 
@@ -20,10 +25,47 @@ function isEnvelope(body: unknown): body is ApiEnvelope<unknown> {
   return !!body && typeof body === 'object' && 'success' in body && 'data' in body;
 }
 
-export async function callApi<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = useAuthStore.getState().accessToken;
+const NO_REFRESH_PATHS = ['/auth/refresh', '/auth/sign-in'];
 
-  const res = await fetch(`${env.VITE_API_BASE_URL}${path}`, {
+let refreshInFlight: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = useAuthStore.getState().refreshToken;
+  if (!refreshToken) return null;
+
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch(`${env.VITE_API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken })
+        });
+        if (!res.ok) {
+          useAuthStore.getState().clear();
+          return null;
+        }
+        const body = await res.json().catch(() => null);
+        const data = (isEnvelope(body) ? body.data : body) as RefreshResponse;
+        useAuthStore.getState().setSession({
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token
+        });
+        return data.access_token;
+      } catch {
+        useAuthStore.getState().clear();
+        return null;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+  }
+
+  return refreshInFlight;
+}
+
+async function request(path: string, init: RequestInit | undefined, token: string | null): Promise<Response> {
+  return fetch(`${env.VITE_API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -32,6 +74,19 @@ export async function callApi<T>(path: string, init?: RequestInit): Promise<T> {
     },
     ...init
   });
+}
+
+export async function callApi<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = useAuthStore.getState().accessToken;
+
+  let res = await request(path, init, token);
+
+  if (res.status === 401 && token && !NO_REFRESH_PATHS.includes(path)) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await request(path, init, newToken);
+    }
+  }
 
   const body = await res.json().catch(() => null);
 

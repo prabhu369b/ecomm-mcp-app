@@ -41,10 +41,13 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-muted/40 to-background p-6">
+      <Card className="w-full max-w-sm border-border/60 shadow-lg shadow-black/[0.03]">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <span className="mb-1 inline-flex size-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+            E
+          </span>
+          <CardTitle className="text-lg">Sign in to Ecom</CardTitle>
           <CardDescription>Enter your credentials to continue</CardDescription>
         </CardHeader>
         <CardContent>
