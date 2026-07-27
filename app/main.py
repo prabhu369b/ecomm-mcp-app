@@ -9,6 +9,7 @@ from app.modules.auth.oauth.well_known_router import router as well_known_router
 from app.modules.mcp.server import mcp_server
 from app.shared.exception_handler import register_handler
 from app.core.logger import Logger
+from app.modules.product.router import router as product_router
 
 logger = Logger.get_logger(__name__)
 
@@ -28,6 +29,8 @@ register_handler(app)
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(oauth_router, prefix="/oauth", tags=["OAuth"])
 app.include_router(well_known_router, tags=["OAuth Discovery"])
+
+app.include_router(product_router, prefix="/products", tags=["Products"])
 
 frontend_router = APIRouter()
 frontend_router.frontend("/", directory="web/dist", fallback="index.html")
