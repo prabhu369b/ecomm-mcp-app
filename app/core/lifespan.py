@@ -8,7 +8,7 @@ from app.database.redis import redis
 from app.database.mongo import mongo
 
 @asynccontextmanager
-async def lifespan(app = FastAPI):
+async def lifespan(app: FastAPI):
 
     logger = Logger.get_logger(__name__)
     logger.info("Application Started")

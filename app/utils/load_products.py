@@ -1,4 +1,4 @@
-from app.services.mongo import mongo
+from app.database.mongo import mongo
 from app.core.logger import Logger
 
 logger = Logger.get_logger(__name__)

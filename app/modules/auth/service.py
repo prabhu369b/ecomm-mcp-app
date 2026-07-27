@@ -36,11 +36,13 @@ class AuthService:
             email=request.email,
             password_hash = hashed
         )
+        if user is None or user.id is None:
+            return None
 
         user = self.user_repo.create(user)
     
         return UserResponse(
-            id=user.id,
+            id=str(user.id),
             name=user.name,
             email=user.email,
             username=user.username
@@ -75,7 +77,7 @@ class AuthService:
             refresh_token
         )
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(timezone.utc)
 
         session = SessionData(
             session_id=session_id,
