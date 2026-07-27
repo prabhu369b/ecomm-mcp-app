@@ -28,7 +28,10 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/auth': 'http://localhost:8000',
-      '/oauth': 'http://localhost:8000'
+      '/oauth': 'http://localhost:8000',
+      '/products': 'http://localhost:8000',
+      '/cart': 'http://localhost:8000',
+      '/orders': 'http://localhost:8000'
     }
   }
 });
