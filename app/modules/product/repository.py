@@ -34,6 +34,16 @@ class ProductRepository:
             return None
         return self._to_product(doc)
 
+    def decrement_stock(self, product_id: str, qty: int) -> None:
+        self.collection.update_one(
+            {"_id": ObjectId(product_id)},
+            {
+                "$inc": {
+                    "stock": -qty
+                }
+            }
+        )
+
     @staticmethod
     def _to_product(doc: dict) -> Product:
         doc["id"] = str(doc.pop("_id"))
