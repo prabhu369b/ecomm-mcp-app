@@ -1,5 +1,8 @@
 from app.database.mongo import MongoService
 from app.modules.auth.oauth.models import OAuthClient
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 class OAuthRepository:
 
@@ -9,6 +12,7 @@ class OAuthRepository:
     async def create(self, client: OAuthClient):
         document = client.model_dump(exclude={"id"}, mode='json')
         result = self.collection.insert_one(document)
+        logger.info("oauth client persisted: client_id=%s", client.client_id)
         return result.inserted_id
 
     async def find_client_by_id(self, client_id: str) -> OAuthClient | None:

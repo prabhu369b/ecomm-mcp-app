@@ -14,6 +14,9 @@ from app.modules.auth.session.repository import SessionRepository
 from app.database.mongo import MongoService
 from app.database.redis import RedisService
 from app.database.lock import RedisLockService
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 def get_auth_service(
@@ -52,13 +55,15 @@ def get_current_user(
     )
 
     user = repo.find_by_id(user_id=payload.sub)
-    
+
     if user is None:
+        logger.warning("get_current_user failed: user_id=%s not found", payload.sub)
         raise InvalidAccessToken()
-    
+
     if not user.is_active:
+        logger.warning("get_current_user failed: user_id=%s disabled", user.id)
         raise UserDisabled()
-    
+
     return AuthenticatedUser(
         user_id=str(user.id),
         name=user.name,
@@ -104,4 +109,5 @@ def get_optional_current_user(
                 scops=user.scopes
         )
     except InvalidAccessToken or AccessTokenExpired:
+            logger.info("get_optional_current_user: invalid/expired token, treating as anonymous")
             return None

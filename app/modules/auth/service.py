@@ -10,8 +10,11 @@ from app.core.utils.id_generator import IdGenerator
 from app.database.lock import RedisLockService
 from app.modules.auth.session.keys import SessionKeys
 from datetime import datetime, timezone
+from app.core.logger import Logger
 
 settings = get_settings()
+logger = Logger.get_logger(__name__)
+
 class AuthService:
 
     def __init__(self, user_repo: UserRepository, session_repo: SessionRepository, password_service: PasswordService, token_service: TokenService, lock_service: RedisLockService):
@@ -22,14 +25,16 @@ class AuthService:
         self.lock_service = lock_service
     
     def register(self, request: RegisterRequest):
-        
+
         if self.user_repo.exists_email(request.email):
+            logger.warning("register failed: email already exists username=%s", request.username)
             raise EmailAlreadyExists()
         if self.user_repo.exists_username(request.username):
+            logger.warning("register failed: username already exists username=%s", request.username)
             raise UsernameAlreadyExists()
-        
+
         hashed = self.password.hash(password=request.password)
-        
+
         user = User(
             name=request.name,
             username=request.username,
@@ -40,7 +45,9 @@ class AuthService:
             return None
 
         user = self.user_repo.create(user)
-    
+
+        logger.info("user registered: user_id=%s username=%s", user.id, user.username)
+
         return UserResponse(
             id=str(user.id),
             name=user.name,
@@ -52,16 +59,19 @@ class AuthService:
 
         user = self.user_repo.find_by_email(body.email)
         if not user:
+            logger.warning("login failed: unknown email ip=%s", context.ip_address)
             raise InvalidCredentials()
-         
+
         valid = self.password.verify(hash=user.password_hash, password=body.password,)
 
         if not valid:
+            logger.warning("login failed: invalid password user_id=%s ip=%s", user.id, context.ip_address)
             raise InvalidCredentials()
-        
+
         if not user.is_active:
+            logger.warning("login failed: user disabled user_id=%s", user.id)
             raise UserDisabled()
-        
+
         # TODO Need to add Email Verification
         # if not user.is_verified:
         #     raise EmailNotVerified()
@@ -92,6 +102,8 @@ class AuthService:
         
         await self.session_repo.create(session=session)
 
+        logger.info("login success: user_id=%s session_id=%s ip=%s", user.id, session_id, context.ip_address)
+
         return LoginResponse(
             access_token=token,
             refresh_token=refresh_token,
@@ -105,14 +117,17 @@ class AuthService:
         session = await self.session_repo.find_by_refresh_hash(refresh_hash)
 
         if not session:
+            logger.warning("refresh failed: unknown/expired refresh token")
             raise InvalidRefreshToken()
 
         user = self.user_repo.find_by_id(session.user_id)
 
         if not user:
+            logger.warning("refresh failed: user not found user_id=%s", session.user_id)
             raise InvalidRefreshToken()
 
         if not user.is_active:
+            logger.warning("refresh failed: user disabled user_id=%s", user.id)
             raise UserDisabled()
 
         async with self.lock_service.acquire(SessionKeys.session(session.session_id)):
@@ -134,6 +149,8 @@ class AuthService:
             session_id=session.session_id,
         )
 
+        logger.info("refresh success: user_id=%s session_id=%s", user.id, session.session_id)
+
         return LoginResponse(
             access_token=access,
             refresh_token=new_refresh,
@@ -149,4 +166,7 @@ class AuthService:
 
         if session:
             await self.session_repo.revoke(session)
+            logger.info("logout success: user_id=%s session_id=%s", session.user_id, session.session_id)
+        else:
+            logger.warning("logout failed: unknown/expired refresh token")
 

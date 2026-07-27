@@ -13,8 +13,10 @@ from app.modules.auth.oauth.scopes import PRODUCTS_READ, SUPPORTED_SCOPES
 from app.modules.auth.token_service import TokenService
 from app.modules.mcp.token_verifier import OAuthTokenVerifier
 from app.modules.product.repository import ProductRepository
+from app.core.logger import Logger
 
 settings = get_settings()
+logger = Logger.get_logger(__name__)
 
 _base_host = urlparse(settings.base_url).netloc
 
@@ -40,6 +42,10 @@ product_repo = ProductRepository(mongo)
 def _require_scope(scope: str) -> None:
     access_token = get_access_token()
     if access_token is None or scope not in access_token.scopes:
+        logger.warning(
+            "mcp permission denied: required scope=%s client_id=%s",
+            scope, access_token.client_id if access_token else None,
+        )
         raise PermissionError(f"Missing required scope: {scope}")
 
 
@@ -47,6 +53,8 @@ def _require_scope(scope: str) -> None:
 def list_products(limit: int = 20) -> list[dict]:
     """List products from the store catalog."""
     _require_scope(PRODUCTS_READ)
+
+    logger.info("mcp tool call: list_products limit=%s", limit)
 
     return [
         product.model_dump()

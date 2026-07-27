@@ -2,6 +2,9 @@ from mcp.server.auth.provider import AccessToken, TokenVerifier
 
 from app.modules.auth.exceptions import AccessTokenExpired, InvalidAccessToken
 from app.modules.auth.token_service import TokenService
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 class OAuthTokenVerifier(TokenVerifier):
@@ -14,6 +17,7 @@ class OAuthTokenVerifier(TokenVerifier):
         try:
             payload = self.token_service.verify_access_token(token)
         except (AccessTokenExpired, InvalidAccessToken):
+            logger.warning("mcp bearer token rejected: invalid or expired")
             return None
 
         return AccessToken(

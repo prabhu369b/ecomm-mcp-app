@@ -6,8 +6,10 @@ from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExist
 from app.modules.user.exceptions import UserDisabled
 from app.shared.response import ApiResponse
 from app.shared.openapi import error_responses
+from app.core.logger import Logger
 
 router = APIRouter()
+logger = Logger.get_logger(__name__)
 
 @router.post(
         "/sign-up",
@@ -41,8 +43,10 @@ async def login(
         user_agent=request.headers.get("User-Agent", ""),
     )
 
+    logger.info("login attempt: ip=%s device=%s", ip, body.device)
+
     response = await service.login(body, context)
-    
+
 
     return ApiResponse(
         success=True,

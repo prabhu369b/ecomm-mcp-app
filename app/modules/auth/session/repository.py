@@ -2,6 +2,9 @@ from datetime import datetime, timezone
 from app.database.redis import RedisService
 from app.modules.auth.schemas import SessionData
 from app.modules.auth.session.keys import SessionKeys
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 class SessionRepository:
 
@@ -43,6 +46,8 @@ class SessionRepository:
         )
 
         await pipe.execute()
+
+        logger.info("session created: session_id=%s user_id=%s", session.session_id, session.user_id)
 
     async def find_by_refresh_hash(
         self,
@@ -97,6 +102,8 @@ class SessionRepository:
 
         await pipe.execute()
 
+        logger.info("session rotated: session_id=%s", session.session_id)
+
         return updated
 
     async def revoke(self, session: SessionData):
@@ -117,3 +124,5 @@ class SessionRepository:
         )
 
         await pipe.execute()
+
+        logger.info("session revoked: session_id=%s user_id=%s", session.session_id, session.user_id)

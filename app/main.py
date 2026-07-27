@@ -8,6 +8,9 @@ from app.modules.auth.oauth.router import router as oauth_router
 from app.modules.auth.oauth.well_known_router import router as well_known_router
 from app.modules.mcp.server import mcp_server
 from app.shared.exception_handler import register_handler
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 mcp_app = mcp_server.streamable_http_app()
 
@@ -35,5 +38,8 @@ app.include_router(frontend_router, prefix="/app")
 # frontend fallback below) no matter what order it's registered in.
 app.mount("/mcp", mcp_app)
 
+logger.info("Routers mounted: auth=/auth oauth=/oauth frontend=/app mcp=/mcp")
+
 def run() -> None:
+    logger.info("Starting uvicorn server on 0.0.0.0:8000")
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True, log_config=None)

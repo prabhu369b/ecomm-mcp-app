@@ -8,8 +8,10 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 import hashlib
 import hmac
 import secrets
+from app.core.logger import Logger
 
 settings = get_settings()
+logger = Logger.get_logger(__name__)
 
 class TokenService:
     def __init__(self):
@@ -70,9 +72,11 @@ class TokenService:
             )
 
         except ExpiredSignatureError:
+            logger.info("access token verification failed: expired")
             raise AccessTokenExpired()
 
         except InvalidTokenError:
+            logger.warning("access token verification failed: invalid token")
             raise InvalidAccessToken()
 
     @staticmethod
