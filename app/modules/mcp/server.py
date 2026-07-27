@@ -1,8 +1,11 @@
+from urllib.parse import urlparse
+
 from pydantic import AnyHttpUrl
 
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from app.config.settings import get_settings
 from app.database.mongo import mongo
@@ -13,6 +16,8 @@ from app.modules.product.repository import ProductRepository
 
 settings = get_settings()
 
+_base_host = urlparse(settings.base_url).netloc
+
 mcp_server = FastMCP(
     name="mcp-server",
     token_verifier=OAuthTokenVerifier(TokenService()),
@@ -21,6 +26,9 @@ mcp_server = FastMCP(
         resource_server_url=AnyHttpUrl(f"{settings.base_url}/mcp"),
         required_scopes=SUPPORTED_SCOPES,
     ),
+    # Public base_url host must be allow-listed or the DNS-rebinding-protection
+    # middleware rejects it with 421 (e.g. an ngrok tunnel host).
+    transport_security=TransportSecuritySettings(allowed_hosts=[_base_host]),
     # Mounted at "/mcp" in main.py, so relative to that mount the streamable
     # endpoint itself lives at root — this is NOT the externally-visible path.
     streamable_http_path="/",
