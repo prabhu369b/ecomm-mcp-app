@@ -14,13 +14,14 @@ async def lifespan(app: FastAPI):
     logger.info("Application Started")
 
     mongo.client  # force-connect now instead of on first request
+    await redis.connect()
 
     app.state.redis = redis
     app.state.mongo = mongo
 
     yield
-    
-    redis.close()
+
+    await redis.close()
     mongo.close()
 
     logger.info("Application Stopped")

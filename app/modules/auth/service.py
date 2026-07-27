@@ -48,7 +48,7 @@ class AuthService:
             username=user.username
         )
     
-    def login(self, body:LoginRequest, context: LoginContext):
+    async def login(self, body:LoginRequest, context: LoginContext):
 
         user = self.user_repo.find_by_email(body.email)
         if not user:
@@ -90,7 +90,7 @@ class AuthService:
             last_used_at=now,
         )
         
-        self.session_repo.create(session=session)
+        await self.session_repo.create(session=session)
 
         return LoginResponse(
             access_token=token,
@@ -98,11 +98,11 @@ class AuthService:
             expires_in=settings.jwt.access_token_expiry
         )
 
-    def refresh(self, refresh_token: str) -> LoginResponse:
+    async def refresh(self, refresh_token: str) -> LoginResponse:
 
         refresh_hash = self.token_service.hash_refresh_token(refresh_token)
 
-        session = self.session_repo.find_by_refresh_hash(refresh_hash)
+        session = await self.session_repo.find_by_refresh_hash(refresh_hash)
 
         if not session:
             raise InvalidRefreshToken()
@@ -115,7 +115,7 @@ class AuthService:
         if not user.is_active:
             raise UserDisabled()
 
-        with self.lock_service.acquire(SessionKeys.session(session.session_id)):
+        async with self.lock_service.acquire(SessionKeys.session(session.session_id)):
 
             new_refresh = self.token_service.generate_refresh_token()
 
@@ -123,7 +123,7 @@ class AuthService:
                 new_refresh
             )
 
-            self.session_repo.rotate(
+            await self.session_repo.rotate(
                 session=session,
                 old_hash=refresh_hash,
                 new_hash=new_hash,
@@ -141,12 +141,12 @@ class AuthService:
             expires_in=settings.jwt.access_token_expiry
         )
 
-    def logout(self, refresh_token: str):
+    async def logout(self, refresh_token: str):
 
         refresh_hash = self.token_service.hash_refresh_token(refresh_token)
 
-        session = self.session_repo.find_by_refresh_hash(refresh_hash)
+        session = await self.session_repo.find_by_refresh_hash(refresh_hash)
 
         if session:
-            self.session_repo.revoke(session)
+            await self.session_repo.revoke(session)
 

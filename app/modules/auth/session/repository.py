@@ -10,7 +10,7 @@ class SessionRepository:
     def __init__(self, redis: RedisService):
         self.redis = redis
 
-    def create(self, session: SessionData):
+    async def create(self, session: SessionData):
         session_key = SessionKeys.session(
             session.session_id
         )
@@ -42,21 +42,21 @@ class SessionRepository:
             session.session_id
         )
 
-        pipe.execute()
+        await pipe.execute()
 
-    def find_by_refresh_hash(
+    async def find_by_refresh_hash(
         self,
         refresh_hash: str
     ) -> SessionData | None:
 
-        session_id = self.redis.get(
+        session_id = await self.redis.get(
             SessionKeys.refresh_index(refresh_hash)
         )
 
         if not session_id:
             return None
 
-        session = self.redis.get(
+        session = await self.redis.get(
             SessionKeys.session(str(session_id))
         )
 
@@ -65,7 +65,7 @@ class SessionRepository:
 
         return SessionData.model_validate_json(session)
 
-    def rotate(
+    async def rotate(
         self,
         session: SessionData,
         old_hash: str,
@@ -95,11 +95,11 @@ class SessionRepository:
             updated.model_dump_json()
         )
 
-        pipe.execute()
+        await pipe.execute()
 
         return updated
 
-    def revoke(self, session: SessionData):
+    async def revoke(self, session: SessionData):
 
         pipe = self.redis.pipeline()
 
@@ -116,4 +116,4 @@ class SessionRepository:
             session.session_id
         )
 
-        pipe.execute()
+        await pipe.execute()

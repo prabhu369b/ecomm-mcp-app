@@ -15,9 +15,6 @@ class UserRepository:
 
     def create(self, user: User):
         document = user.model_dump(exclude={"id"})
-        # timestamps to bottom (pydantic puts base-class fields first)
-        for key in ("created_at", "updated_at"):
-            document[key] = document.pop(key)
         result = self.collection.insert_one(document)
         user.id = str(result.inserted_id)
         return user

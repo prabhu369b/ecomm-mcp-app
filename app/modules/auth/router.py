@@ -41,7 +41,7 @@ async def login(
         user_agent=request.headers.get("User-Agent", ""),
     )
 
-    response = service.login(body, context)
+    response = await service.login(body, context)
     
 
     return ApiResponse(
@@ -68,7 +68,7 @@ async def me(current_user: AuthenticatedUser = Depends(get_current_user)):
              status_code=status.HTTP_200_OK
 )
 async def refresh(request: RefreshTokenRequest, service: AuthService = Depends(get_auth_service)):
-    response = service.refresh(
+    response = await service.refresh(
         request.refresh_token
     )
 
@@ -86,7 +86,7 @@ async def logout(
     request: LogoutRequest, 
     service: AuthService = Depends(get_auth_service)            
 ):
-    service.logout(
+    await service.logout(
         request.refresh_token
     )
 
