@@ -56,7 +56,7 @@ class CartService:
 
     async def update_item(self, user_id: str, product_id: str, qty: int) -> CartResponse:
         cart = await self.repo.get(user_id)
-        cart.items = [i for i in cart.items if i.product_id==product_id]
+        cart.items = [i for i in cart.items if i.product_id!=product_id]
         if qty > 0:
             cart.items.append(CartItem(product_id=product_id, qty=qty))
         await self.repo.save(cart)

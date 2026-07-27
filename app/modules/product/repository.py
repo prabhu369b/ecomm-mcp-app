@@ -1,5 +1,7 @@
 from os import name, wait
 
+from bson import ObjectId
+
 from app.modules.cart.exceptions import ProductNotFound
 from app.modules.product.models import Product
 from app.database.mongo import MongoService
@@ -27,7 +29,7 @@ class ProductRepository:
         return [self._to_product(doc) for doc in documents], total
 
     def find_by_id(self, product_id: str) -> Product | None:
-        doc = self.collection.find_one({"_id": product_id})
+        doc = self.collection.find_one({"_id": ObjectId(product_id)})
         if doc is None:
             return None
         return self._to_product(doc)
