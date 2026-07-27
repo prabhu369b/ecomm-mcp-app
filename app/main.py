@@ -10,6 +10,7 @@ from app.modules.mcp.server import mcp_server
 from app.shared.exception_handler import register_handler
 from app.core.logger import Logger
 from app.modules.product.router import router as product_router
+from app.modules.cart.router import router as cart_router
 
 logger = Logger.get_logger(__name__)
 
@@ -31,6 +32,7 @@ app.include_router(oauth_router, prefix="/oauth", tags=["OAuth"])
 app.include_router(well_known_router, tags=["OAuth Discovery"])
 
 app.include_router(product_router, prefix="/products", tags=["Products"])
+app.include_router(cart_router, prefix="/cart", tags=["Cart"])
 
 frontend_router = APIRouter()
 frontend_router.frontend("/", directory="web/dist", fallback="index.html")
