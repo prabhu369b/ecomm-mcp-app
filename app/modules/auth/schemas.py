@@ -30,6 +30,10 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
 
+class UpdateProfileRequest(BaseModel):
+    name: str | None = None
+    username: str | None = None
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str

@@ -1,8 +1,8 @@
-from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext, SessionData
+from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext, SessionData, UpdateProfileRequest, AuthenticatedUser
 from app.modules.user.repository import UserRepository
 from app.modules.auth.password import PasswordService
 from app.modules.user.models import User
-from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken
+from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken, InvalidAccessToken
 from app.modules.auth.token_service import TokenService
 from app.config.settings import get_settings
 from app.modules.auth.session.repository import SessionRepository
@@ -57,6 +57,36 @@ class AuthService:
             username=user.username
         )
     
+    def update_profile(self, user_id: str, request: UpdateProfileRequest) -> AuthenticatedUser:
+        fields = {}
+
+        if request.username is not None:
+            existing = self.user_repo.exists_username(request.username)
+            current = self.user_repo.find_by_id(user_id)
+            if existing and (current is None or current.username != request.username):
+                logger.warning("update_profile failed: username taken user_id=%s", user_id)
+                raise UsernameAlreadyExists()
+            fields["username"] = request.username
+
+        if request.name is not None:
+            fields["name"] = request.name
+
+        user = self.user_repo.update(user_id, fields) if fields else self.user_repo.find_by_id(user_id)
+
+        if user is None:
+            raise InvalidAccessToken()  # unreachable in practice: caller already resolved this user_id
+
+        logger.info("profile updated: user_id=%s fields=%s", user_id, list(fields.keys()))
+
+        return AuthenticatedUser(
+            user_id=str(user.id),
+            name=user.name,
+            username=user.username,
+            email=user.email,
+            roles=user.roles,
+            scops=user.scopes
+        )
+
     async def login(self, body:LoginRequest, context: LoginContext):
 
         user = self.user_repo.find_by_email(body.email)

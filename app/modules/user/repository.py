@@ -23,6 +23,11 @@ class UserRepository:
         logger.info("user created: user_id=%s", user.id)
         return user
     
+    def update(self, user_id: str, fields: dict) -> User | None:
+        self.collection.update_one({"_id": ObjectId(user_id)}, {"$set": fields})
+        logger.info("user updated: user_id=%s fields=%s", user_id, list(fields.keys()))
+        return self.find_by_id(user_id)
+
     def find_by_id(self, user_id: str) -> User | None:
         document = self._to_user(self.collection.find_one({"_id": ObjectId(user_id)}))
         if document is None:
