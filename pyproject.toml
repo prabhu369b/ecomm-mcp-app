@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 start = "app.main:run"
+seed = "app.utils.load_products:run"
 
 [build-system]
 requires = ["hatchling"]
