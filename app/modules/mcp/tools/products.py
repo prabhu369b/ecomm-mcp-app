@@ -17,3 +17,28 @@ def list_products(limit: int = 20) -> list[dict]:
         product.model_dump()
         for product in product_repo.list_all(limit=limit)
     ]
+
+
+@mcp_server.tool()
+def search_products(
+    q: str | None = None,
+    category_id: str | None = None,
+    page: int = 1,
+    page_size: int = 20,
+) -> dict:
+    """Search the store catalog by name and/or category, paginated."""
+    require_scope(PRODUCTS_READ)
+
+    logger.info(
+        "mcp tool call: search_products q=%s category_id=%s page=%s page_size=%s",
+        q, category_id, page, page_size,
+    )
+
+    products, total = product_repo.search(q, category_id, page, page_size)
+
+    return {
+        "items": [product.model_dump() for product in products],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
