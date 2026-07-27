@@ -41,11 +41,13 @@ class AuthService:
             email=request.email,
             password_hash = hashed
         )
-        if user is None or user.id is None:
-            return None
+
 
         user = self.user_repo.create(user)
 
+        if user is None or user.id is None:
+            return None
+        
         logger.info("user registered: user_id=%s username=%s", user.id, user.username)
 
         return UserResponse(

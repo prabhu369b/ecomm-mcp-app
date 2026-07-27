@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './pages/__root'
 import { Route as PageRouteImport } from './pages/page'
 import { Route as AuthorizePageRouteImport } from './pages/authorize/page'
+import { Route as CartPageRouteImport } from './pages/cart/page'
 import { Route as LoginPageRouteImport } from './pages/login/page'
 
 const PageRoute = PageRouteImport.update({
@@ -23,6 +24,11 @@ const AuthorizePageRoute = AuthorizePageRouteImport.update({
   path: '/authorize/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartPageRoute = CartPageRouteImport.update({
+  id: '/cart/',
+  path: '/cart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginPageRoute = LoginPageRouteImport.update({
   id: '/login/',
   path: '/login/',
@@ -32,30 +38,34 @@ const LoginPageRoute = LoginPageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof PageRoute
   '/authorize/': typeof AuthorizePageRoute
+  '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PageRoute
   '/authorize': typeof AuthorizePageRoute
+  '/cart': typeof CartPageRoute
   '/login': typeof LoginPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof PageRoute
   '/authorize/': typeof AuthorizePageRoute
+  '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/authorize/' | '/login/'
+  fullPaths: '/' | '/authorize/' | '/cart/' | '/login/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/authorize' | '/login'
-  id: '__root__' | '/' | '/authorize/' | '/login/'
+  to: '/' | '/authorize' | '/cart' | '/login'
+  id: '__root__' | '/' | '/authorize/' | '/cart/' | '/login/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PageRoute: typeof PageRoute
   AuthorizePageRoute: typeof AuthorizePageRoute
+  CartPageRoute: typeof CartPageRoute
   LoginPageRoute: typeof LoginPageRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthorizePageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cart/': {
+      id: '/cart/'
+      path: '/cart'
+      fullPath: '/cart/'
+      preLoaderRoute: typeof CartPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   PageRoute: PageRoute,
   AuthorizePageRoute: AuthorizePageRoute,
+  CartPageRoute: CartPageRoute,
   LoginPageRoute: LoginPageRoute,
 }
 export const routeTree = rootRouteImport
