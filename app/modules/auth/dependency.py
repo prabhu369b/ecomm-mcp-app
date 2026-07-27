@@ -66,6 +66,7 @@ def get_current_user(
 
     return AuthenticatedUser(
         user_id=str(user.id),
+        session_id=payload.sid,
         name=user.name,
         username=user.username,
         email=user.email,
@@ -102,6 +103,7 @@ def get_optional_current_user(
         
         return AuthenticatedUser(
                 user_id=str(user.id),
+                session_id=payload.sid,
                 name=user.name,
                 username=user.username,
                 email=user.email,

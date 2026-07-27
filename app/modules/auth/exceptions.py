@@ -36,3 +36,7 @@ class AccessTokenExpired(AppException):
 class InvalidRefreshToken(AppException):
     status_code = status.HTTP_401_UNAUTHORIZED
     message = "Invalid Refresh Token"
+
+class SessionNotFound(AppException):
+    status_code = status.HTTP_404_NOT_FOUND
+    message = "Session not found"

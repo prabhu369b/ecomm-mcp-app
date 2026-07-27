@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status, Request
-from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext, RefreshTokenRequest, LogoutRequest, UpdateProfileRequest
+from app.modules.auth.schemas import RegisterRequest, UserResponse, AuthenticatedUser,  LoginRequest, LoginResponse, LoginContext, RefreshTokenRequest, LogoutRequest, UpdateProfileRequest, SessionResponse, RevokeAllResponse
 from app.modules.auth.service import AuthService
 from app.modules.auth.dependency import get_auth_service, get_current_user
-from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidAccessToken, AccessTokenExpired
+from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidAccessToken, AccessTokenExpired, SessionNotFound
 from app.modules.user.exceptions import UserDisabled
 from app.shared.response import ApiResponse
 from app.shared.openapi import error_responses
@@ -78,7 +78,7 @@ async def update_profile(
     current_user: AuthenticatedUser = Depends(get_current_user),
     service: AuthService = Depends(get_auth_service)
 ):
-    data = service.update_profile(current_user.user_id, body)
+    data = service.update_profile(current_user.user_id, current_user.session_id, body)
 
     return ApiResponse(
         success=True,
@@ -106,11 +106,66 @@ async def refresh(request: RefreshTokenRequest, service: AuthService = Depends(g
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def logout(
-    request: LogoutRequest, 
-    service: AuthService = Depends(get_auth_service)            
+    request: LogoutRequest,
+    service: AuthService = Depends(get_auth_service)
 ):
     await service.logout(
         request.refresh_token
     )
 
-    
+@router.get(
+    "/sessions",
+    response_model=ApiResponse[list[SessionResponse]],
+    responses=error_responses(InvalidAccessToken, AccessTokenExpired, UserDisabled)
+)
+async def list_sessions(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service)
+):
+    data = await service.list_sessions(current_user.user_id, current_user.session_id)
+
+    return ApiResponse(
+        success=True,
+        message="Sessions Fetched",
+        data=data
+    )
+
+@router.delete(
+    "/sessions/current",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def revoke_current_session(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service)
+):
+    await service.revoke_session(current_user.user_id, current_user.session_id)
+
+@router.delete(
+    "/sessions",
+    response_model=ApiResponse[RevokeAllResponse]
+)
+async def revoke_all_sessions(
+    keep_current: bool = False,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service)
+):
+    except_id = current_user.session_id if keep_current else None
+    revoked = await service.revoke_all_sessions(current_user.user_id, except_id)
+
+    return ApiResponse(
+        success=True,
+        message="Sessions Revoked",
+        data=RevokeAllResponse(revoked=revoked)
+    )
+
+@router.delete(
+    "/sessions/{session_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(SessionNotFound)
+)
+async def revoke_session(
+    session_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service)
+):
+    await service.revoke_session(current_user.user_id, session_id)

@@ -1,8 +1,8 @@
-from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext, SessionData, UpdateProfileRequest, AuthenticatedUser
+from app.modules.auth.schemas import RegisterRequest, UserResponse, LoginRequest, LoginResponse, LoginContext, SessionData, UpdateProfileRequest, AuthenticatedUser, SessionResponse
 from app.modules.user.repository import UserRepository
 from app.modules.auth.password import PasswordService
 from app.modules.user.models import User
-from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken, InvalidAccessToken
+from app.modules.auth.exceptions import UsernameAlreadyExists, EmailAlreadyExists, InvalidCredentials, UserDisabled, InvalidRefreshToken, InvalidAccessToken, SessionNotFound
 from app.modules.auth.token_service import TokenService
 from app.config.settings import get_settings
 from app.modules.auth.session.repository import SessionRepository
@@ -57,7 +57,7 @@ class AuthService:
             username=user.username
         )
     
-    def update_profile(self, user_id: str, request: UpdateProfileRequest) -> AuthenticatedUser:
+    def update_profile(self, user_id: str, session_id: str, request: UpdateProfileRequest) -> AuthenticatedUser:
         fields = {}
 
         if request.username is not None:
@@ -80,6 +80,7 @@ class AuthService:
 
         return AuthenticatedUser(
             user_id=str(user.id),
+            session_id=session_id,
             name=user.name,
             username=user.username,
             email=user.email,
@@ -189,6 +190,34 @@ class AuthService:
             token_type="Bearer",
             expires_in=settings.jwt.access_token_expiry
         )
+
+    async def list_sessions(self, user_id: str, current_session_id: str) -> list[SessionResponse]:
+        sessions = await self.session_repo.list_by_user(user_id)
+
+        return [
+            SessionResponse(
+                session_id=s.session_id,
+                device=s.device,
+                ip_address=s.ip_address,
+                user_agent=s.user_agent,
+                created_at=s.created_at,
+                last_used_at=s.last_used_at,
+                current=s.session_id == current_session_id,
+            )
+            for s in sessions
+        ]
+
+    async def revoke_session(self, user_id: str, session_id: str) -> None:
+        revoked = await self.session_repo.revoke_by_id(user_id, session_id)
+        if not revoked:
+            logger.warning("revoke_session failed: session_id=%s not found for user_id=%s", session_id, user_id)
+            raise SessionNotFound()
+        logger.info("session revoked by user: session_id=%s user_id=%s", session_id, user_id)
+
+    async def revoke_all_sessions(self, user_id: str, except_session_id: str | None = None) -> int:
+        revoked = await self.session_repo.revoke_all(user_id, except_session_id)
+        logger.info("bulk session revoke: user_id=%s revoked=%s keep_current=%s", user_id, revoked, except_session_id is not None)
+        return revoked
 
     async def logout(self, refresh_token: str):
 

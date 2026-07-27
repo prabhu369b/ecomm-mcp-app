@@ -49,6 +49,48 @@ class SessionRepository:
 
         logger.info("session created: session_id=%s user_id=%s", session.session_id, session.user_id)
 
+    async def find_by_id(self, session_id: str) -> SessionData | None:
+
+        session = await self.redis.get(
+            SessionKeys.session(session_id)
+        )
+
+        if not session:
+            return None
+
+        return SessionData.model_validate_json(session)
+
+    async def list_by_user(self, user_id: str) -> list[SessionData]:
+
+        session_ids = await self.redis.client.smembers(
+            SessionKeys.user_sessions(user_id)
+        )
+
+        if not session_ids:
+            return []
+
+        session_ids = [str(session_id) for session_id in session_ids]
+
+        pipe = self.redis.pipeline()
+        for session_id in session_ids:
+            pipe.get(SessionKeys.session(session_id))
+
+        raw_sessions = await pipe.execute()
+
+        sessions = []
+        stale_ids = []
+        for session_id, raw in zip(session_ids, raw_sessions):
+            if raw is None:
+                stale_ids.append(session_id)
+                continue
+            sessions.append(SessionData.model_validate_json(raw))
+
+        if stale_ids:
+            await self.redis.client.srem(SessionKeys.user_sessions(user_id), *stale_ids)
+
+        sessions.sort(key=lambda s: s.last_used_at, reverse=True)
+        return sessions
+
     async def find_by_refresh_hash(
         self,
         refresh_hash: str
@@ -126,3 +168,26 @@ class SessionRepository:
         await pipe.execute()
 
         logger.info("session revoked: session_id=%s user_id=%s", session.session_id, session.user_id)
+
+    async def revoke_by_id(self, user_id: str, session_id: str) -> bool:
+
+        session = await self.find_by_id(session_id)
+
+        if session is None or session.user_id != user_id:
+            return False
+
+        await self.revoke(session)
+        return True
+
+    async def revoke_all(self, user_id: str, except_session_id: str | None = None) -> int:
+
+        sessions = await self.list_by_user(user_id)
+
+        revoked = 0
+        for session in sessions:
+            if session.session_id == except_session_id:
+                continue
+            await self.revoke(session)
+            revoked += 1
+
+        return revoked

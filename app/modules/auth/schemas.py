@@ -66,6 +66,7 @@ class AccessTokenPayload(BaseModel):
 
 class AuthenticatedUser(BaseModel):
     user_id: str
+    session_id: str
     name: str
     username: str
     email: EmailStr
@@ -74,6 +75,18 @@ class AuthenticatedUser(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class SessionResponse(BaseModel):
+    session_id: str
+    device: str
+    ip_address: str
+    user_agent: str
+    created_at: datetime
+    last_used_at: datetime
+    current: bool
+
+class RevokeAllResponse(BaseModel):
+    revoked: int
 
 class SessionData(BaseModel):
     session_id: str
