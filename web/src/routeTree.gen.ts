@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './pages/__root'
 import { Route as PageRouteImport } from './pages/page'
+import { Route as AccountPageRouteImport } from './pages/account/page'
 import { Route as AuthorizePageRouteImport } from './pages/authorize/page'
 import { Route as CartPageRouteImport } from './pages/cart/page'
 import { Route as LoginPageRouteImport } from './pages/login/page'
+import { Route as OrdersPageRouteImport } from './pages/orders/page'
 
 const PageRoute = PageRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountPageRoute = AccountPageRouteImport.update({
+  id: '/account/',
+  path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthorizePageRoute = AuthorizePageRouteImport.update({
@@ -34,39 +41,60 @@ const LoginPageRoute = LoginPageRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersPageRoute = OrdersPageRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PageRoute
+  '/account/': typeof AccountPageRoute
   '/authorize/': typeof AuthorizePageRoute
   '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
+  '/orders/': typeof OrdersPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PageRoute
+  '/account': typeof AccountPageRoute
   '/authorize': typeof AuthorizePageRoute
   '/cart': typeof CartPageRoute
   '/login': typeof LoginPageRoute
+  '/orders': typeof OrdersPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof PageRoute
+  '/account/': typeof AccountPageRoute
   '/authorize/': typeof AuthorizePageRoute
   '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
+  '/orders/': typeof OrdersPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/authorize/' | '/cart/' | '/login/'
+  fullPaths:
+    '/' | '/account/' | '/authorize/' | '/cart/' | '/login/' | '/orders/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/authorize' | '/cart' | '/login'
-  id: '__root__' | '/' | '/authorize/' | '/cart/' | '/login/'
+  to: '/' | '/account' | '/authorize' | '/cart' | '/login' | '/orders'
+  id:
+    | '__root__'
+    | '/'
+    | '/account/'
+    | '/authorize/'
+    | '/cart/'
+    | '/login/'
+    | '/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   PageRoute: typeof PageRoute
+  AccountPageRoute: typeof AccountPageRoute
   AuthorizePageRoute: typeof AuthorizePageRoute
   CartPageRoute: typeof CartPageRoute
   LoginPageRoute: typeof LoginPageRoute
+  OrdersPageRoute: typeof OrdersPageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountPageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/authorize/': {
@@ -99,14 +134,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginPageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/': {
+      id: '/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof OrdersPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   PageRoute: PageRoute,
+  AccountPageRoute: AccountPageRoute,
   AuthorizePageRoute: AuthorizePageRoute,
   CartPageRoute: CartPageRoute,
   LoginPageRoute: LoginPageRoute,
+  OrdersPageRoute: OrdersPageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
