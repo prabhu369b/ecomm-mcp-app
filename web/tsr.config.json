@@ -1,0 +1,8 @@
+{
+  "routesDirectory": "./src/pages",
+  "generatedRouteTree": "./src/routeTree.gen.ts",
+  "routeToken": "layout",
+  "indexToken": "page",
+  "routeFileIgnorePrefix": "-",
+  "routeFileIgnorePattern": "(^|/)(components|hooks|utils|stores|store|queries|mutations|schemas|api|mocks|types|constants|context|contexts|lib|tests|__tests__|stories)(/|$)|(^|/)(components|hooks|utils|stores|queries|mutations|schemas|api|mocks|types|constants|contexts|lib)\\.(ts|tsx)$|\\.test\\.(ts|tsx)$|\\.spec\\.(ts|tsx)$|\\.stories\\.(ts|tsx)$"
+}
