@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { callApi } from '@/utils/api';
+import { useAddToCart } from '@/hooks/useCart';
+import { useAuthStore } from '@/stores/authStore';
 
 export const Route = createFileRoute('/')({
   component: HomePage
@@ -43,6 +45,8 @@ function HomePage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const q = useDebouncedValue(search, 300);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const addToCart = useAddToCart();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products', q, page],
@@ -96,7 +100,22 @@ function HomePage() {
                 </span>
               </div>
               <p className="line-clamp-2 text-xs text-muted-foreground">{product.description}</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">${product.price}</p>
+              <div className="mt-1 flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">${product.price}</p>
+                <Button
+                  size="sm"
+                  disabled={product.stock <= 0 || addToCart.isPending}
+                  onClick={() => {
+                    if (!accessToken) {
+                      window.location.assign(`/app/login?next=${encodeURIComponent(window.location.href)}`);
+                      return;
+                    }
+                    addToCart.mutate({ productId: product.id, qty: 1 });
+                  }}
+                >
+                  Add to cart
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
