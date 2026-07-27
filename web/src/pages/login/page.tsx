@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { callApi, ApiError } from '@/utils/api';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginResponse } from './types';
@@ -41,46 +41,81 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-muted/40 to-background p-6">
-      <Card className="w-full max-w-sm border-border/60 shadow-lg shadow-black/[0.03]">
-        <CardHeader>
-          <span className="mb-1 inline-flex size-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+    <main className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center bg-muted/30 p-6">
+      <div className="w-full max-w-[380px]">
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary font-heading text-base font-semibold text-primary-foreground">
             E
           </span>
-          <CardTitle className="text-lg">Sign in to Ecom</CardTitle>
-          <CardDescription>Enter your credentials to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-1">
-              {loading ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          <div className="text-center">
+            <h1 className="text-lg font-semibold tracking-tight text-foreground">Sign in to Ecom</h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Welcome back — enter your details to continue
+            </p>
+          </div>
+        </div>
+
+        <Card className="border-border/70 py-6 shadow-sm">
+          <CardContent>
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email" className="text-xs font-medium text-foreground">
+                  Email address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  required
+                  autoFocus
+                  className="h-9 rounded-md text-sm"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password" className="text-xs font-medium text-foreground">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  required
+                  className="h-9 rounded-md text-sm"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              {error && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                size="lg"
+                className="mt-1 h-9 w-full rounded-md text-sm"
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Protected by{' '}
+          <Link to="/" className="font-medium text-foreground hover:underline">
+            Ecom
+          </Link>{' '}
+          OAuth 2.1
+        </p>
+      </div>
     </main>
   );
 }
