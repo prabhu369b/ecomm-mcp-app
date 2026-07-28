@@ -62,8 +62,8 @@ function ProductCard({ product }: { product: ProductV2 }) {
     : null;
 
   return (
-    <Card className="flex aspect-square flex-col overflow-hidden border-border/70 py-0">
-      <div className="relative h-2/5 w-full shrink-0 bg-white">
+    <Card className="flex flex-col overflow-hidden border-border/70 py-0">
+      <div className="relative aspect-square w-full shrink-0 bg-white">
         {product.thumbnail ? (
           <img
             src={product.thumbnail}
@@ -83,7 +83,7 @@ function ProductCard({ product }: { product: ProductV2 }) {
         )}
       </div>
 
-      <CardContent className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden p-2.5">
+      <CardContent className="flex flex-col gap-1 p-2.5 pb-4">
         <h2 className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
           {product.name}
         </h2>
