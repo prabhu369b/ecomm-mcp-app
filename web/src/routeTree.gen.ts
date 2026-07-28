@@ -15,6 +15,7 @@ import { Route as AuthorizePageRouteImport } from './pages/authorize/page'
 import { Route as CartPageRouteImport } from './pages/cart/page'
 import { Route as LoginPageRouteImport } from './pages/login/page'
 import { Route as OrdersPageRouteImport } from './pages/orders/page'
+import { Route as V2PageRouteImport } from './pages/v2/page'
 
 const PageRoute = PageRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const OrdersPageRoute = OrdersPageRouteImport.update({
   path: '/orders/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const V2PageRoute = V2PageRouteImport.update({
+  id: '/v2/',
+  path: '/v2/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PageRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
   '/orders/': typeof OrdersPageRoute
+  '/v2/': typeof V2PageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PageRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartPageRoute
   '/login': typeof LoginPageRoute
   '/orders': typeof OrdersPageRoute
+  '/v2': typeof V2PageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,20 @@ export interface FileRoutesById {
   '/cart/': typeof CartPageRoute
   '/login/': typeof LoginPageRoute
   '/orders/': typeof OrdersPageRoute
+  '/v2/': typeof V2PageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account/' | '/authorize/' | '/cart/' | '/login/' | '/orders/'
+    | '/'
+    | '/account/'
+    | '/authorize/'
+    | '/cart/'
+    | '/login/'
+    | '/orders/'
+    | '/v2/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/authorize' | '/cart' | '/login' | '/orders'
+  to: '/' | '/account' | '/authorize' | '/cart' | '/login' | '/orders' | '/v2'
   id:
     | '__root__'
     | '/'
@@ -86,6 +101,7 @@ export interface FileRouteTypes {
     | '/cart/'
     | '/login/'
     | '/orders/'
+    | '/v2/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,6 +111,7 @@ export interface RootRouteChildren {
   CartPageRoute: typeof CartPageRoute
   LoginPageRoute: typeof LoginPageRoute
   OrdersPageRoute: typeof OrdersPageRoute
+  V2PageRoute: typeof V2PageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersPageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/v2/': {
+      id: '/v2/'
+      path: '/v2'
+      fullPath: '/v2/'
+      preLoaderRoute: typeof V2PageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -151,6 +175,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartPageRoute: CartPageRoute,
   LoginPageRoute: LoginPageRoute,
   OrdersPageRoute: OrdersPageRoute,
+  V2PageRoute: V2PageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

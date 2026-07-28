@@ -19,12 +19,20 @@ function RootLayout() {
   return (
     <div className="min-h-screen bg-background">
       <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
-        <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            E
+        <div className="flex items-center gap-5">
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+            <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              E
+            </span>
+            Ecom
           </span>
-          Ecom
-        </span>
+          <a href="/app/" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+            Products
+          </a>
+          <a href="/app/v2" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+            Catalog
+          </a>
+        </div>
         <div className="flex items-center gap-3">
           {accessToken ? (
             <AccountMenu />
