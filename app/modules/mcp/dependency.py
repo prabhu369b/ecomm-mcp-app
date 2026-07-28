@@ -1,5 +1,6 @@
 from mcp.server.auth.middleware.auth_context import get_access_token
 
+from app.config.settings import get_settings
 from app.database.mongo import mongo
 from app.database.redis import redis
 from app.database.lock import RedisLockService
@@ -8,11 +9,19 @@ from app.modules.cart.service import CartService
 from app.modules.order.repository import OrderRepository
 from app.modules.order.service import OrderService
 from app.modules.product.repository import ProductRepository
+from app.modules.product_v2.repository import ProductV2Repository
 from app.core.logger import Logger
 
 logger = Logger.get_logger(__name__)
 
-product_repo = ProductRepository(mongo)
+settings = get_settings()
+
+# Which catalog schema the MCP tools read/write against. Controlled by
+# settings.catalog_version ("v1" or "v2") so the whole MCP product/cart/order
+# surface can switch without touching any tool code.
+product_repo = ProductV2Repository(mongo) if settings.catalog_version == "v2" else ProductRepository(mongo)
+logger.info("mcp product catalog active: version=%s", settings.catalog_version)
+
 cart_repo = CartRepository(redis)
 cart_service = CartService(cart_repo, product_repo)
 order_service = OrderService(
