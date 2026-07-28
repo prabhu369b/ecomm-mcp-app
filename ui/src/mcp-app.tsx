@@ -3,6 +3,7 @@
  * lives in ./components (ProductGrid, using the shared @ecom/ui-kit
  * ProductCard also used by the web storefront).
  */
+import { applyDocumentTheme } from "@modelcontextprotocol/ext-apps";
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useState } from "react";
@@ -32,11 +33,20 @@ function EcomApp() {
 
       app.onerror = console.error;
 
+      app.onhostcontextchanged = async (ctx) => {
+        if (ctx.theme) applyDocumentTheme(ctx.theme);
+      };
+
       app.onteardown = async () => {
         return {};
       };
     }
   });
+
+  if (app) {
+    const ctx = app.getHostContext();
+    if (ctx?.theme) applyDocumentTheme(ctx.theme);
+  }
 
   if (error) return <div><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div>Connecting…</div>;

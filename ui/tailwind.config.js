@@ -5,7 +5,7 @@ export default {
     "./src/**/*.{ts,tsx}",
     "../packages/ui-kit/src/**/*.{ts,tsx}",
   ],
-  darkMode: "class",
+  darkMode: ["selector", '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
