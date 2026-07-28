@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     # collection. Left blank by default — set in .env for the seed script.
     catalog_source_url: str = ""
 
+    # Origin product images/thumbnails are hosted on. Needed so the MCP
+    # App UI's CSP allow-lists it (images from any other origin get
+    # silently blocked in the sandboxed iframe otherwise).
+    catalog_image_domain: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
