@@ -1,6 +1,6 @@
-@import 'tailwindcss';
-
-@custom-variant dark (&:where(.dark, .dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   color-scheme: light dark;
@@ -34,20 +34,6 @@
   --card-foreground: oklch(0.96 0.005 90);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.14 0.02 165);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-border: var(--border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 * {
