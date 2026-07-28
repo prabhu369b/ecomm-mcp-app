@@ -5,6 +5,9 @@ from app.modules.cart.models import Cart, CartItem
 from app.modules.cart.repository import CartRepository
 from app.modules.cart.schemas import CartItemResponse, CartResponse
 from app.modules.product.repository import ProductRepository
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 class CartService:
@@ -39,18 +42,25 @@ class CartService:
 
         product = self.product_repo.find_by_id(product_id)
         if product is None:
+            logger.warning("add_item failed: product not found product_id=%s", product_id)
             raise ProductNotFound()
         cart = await self.repo.get(user_id)
 
         existing = next((i for i in cart.items if i.product_id == product_id), None)
         new_qty = (existing.qty if existing else 0) + qty
         if new_qty > product.stock:
+            logger.warning(
+                "add_item failed: insufficient stock product_id=%s requested=%s stock=%s",
+                product_id, new_qty, product.stock,
+            )
             raise InsufficientStock()
-        if existing: 
+        if existing:
             existing.qty = new_qty
         else:
             cart.items.append(CartItem(product_id=product_id, qty=qty))
         await self.repo.save(cart)
+
+        logger.info("cart item added: user_id=%s product_id=%s qty=%s", user_id, product_id, new_qty)
 
         return await self._to_response(cart)
 

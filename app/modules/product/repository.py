@@ -1,10 +1,10 @@
-from os import name, wait
-
 from bson import ObjectId
 
-from app.modules.cart.exceptions import ProductNotFound
 from app.modules.product.models import Product
 from app.database.mongo import MongoService
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 class ProductRepository:
@@ -43,6 +43,7 @@ class ProductRepository:
                 }
             }
         )
+        logger.info("product stock decremented: product_id=%s qty=%s", product_id, qty)
 
     @staticmethod
     def _to_product(doc: dict) -> Product:

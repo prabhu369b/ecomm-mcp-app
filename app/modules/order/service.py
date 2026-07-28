@@ -6,6 +6,9 @@ from app.modules.order.models import Order, OrderItem
 from app.modules.order.repository import OrderRepository
 from app.modules.order.schemas import OrderItemResponse, OrderListResponse, OrderResponse
 from app.modules.product.repository import ProductRepository
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 class OrderService:
@@ -25,6 +28,7 @@ class OrderService:
         async with self.lock_service.acquire(f"checkout:{user_id}"):
             cart = await self.cart_repo.get(user_id)
             if not cart.items:
+                logger.warning("checkout failed: empty cart user_id=%s", user_id)
                 raise EmptyCart()
 
             order_items = []
@@ -32,6 +36,10 @@ class OrderService:
             for item in cart.items:
                 product = self.product_repo.find_by_id(item.product_id)
                 if product is None or product.stock < item.qty:
+                    logger.warning(
+                        "checkout failed: unavailable product_id=%s user_id=%s",
+                        item.product_id, user_id,
+                    )
                     raise EmptyCart()  # or a dedicated OutOfStock exception — your call
                 order_items.append(OrderItem(
                     product_id=item.product_id, name=product.name,
@@ -43,11 +51,14 @@ class OrderService:
             order = self.order_repo.create(Order(user_id=user_id, items=order_items, total=total))
             await self.cart_repo.clear(user_id)
 
+            logger.info("checkout success: user_id=%s order_id=%s total=%s", user_id, order.id, total)
+
             return self._to_response(order)
 
     async def get(self, user_id: str, order_id: str) -> OrderResponse:
         order = self.order_repo.find_by_id(order_id, user_id)
         if order is None:
+            logger.warning("order not found: order_id=%s user_id=%s", order_id, user_id)
             raise OrderNotFound()
         return self._to_response(order)
 

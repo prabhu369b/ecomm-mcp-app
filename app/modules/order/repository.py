@@ -1,6 +1,9 @@
 from bson import ObjectId
 from app.database.mongo import MongoService
 from app.modules.order.models import Order
+from app.core.logger import Logger
+
+logger = Logger.get_logger(__name__)
 
 
 class OrderRepository:
@@ -10,6 +13,7 @@ class OrderRepository:
     def create(self, order: Order) -> Order:
         doc = order.model_dump(exclude={"id"})
         result = self.collection.insert_one(doc)
+        logger.info("order created: order_id=%s user_id=%s total=%s", result.inserted_id, order.user_id, order.total)
         return order.model_copy(update={"id": str(result.inserted_id)})
 
     def find_by_id(self, order_id: str, user_id: str) -> Order | None:
