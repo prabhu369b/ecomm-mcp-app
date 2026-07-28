@@ -1,74 +1,76 @@
+import httpx
+
+from app.config.settings import get_settings
 from app.database.mongo import mongo
 from app.core.logger import Logger
 
 logger = Logger.get_logger(__name__)
 
-def load_dummy_data():
+
+def _fetch_categories(client: httpx.Client, base_url: str) -> list[dict]:
+    response = client.get(f"{base_url}/products/categories")
+    response.raise_for_status()
+    return response.json()
+
+
+def _fetch_all_products(client: httpx.Client, base_url: str) -> list[dict]:
+    response = client.get(f"{base_url}/products", params={"limit": 0})
+    response.raise_for_status()
+    return response.json()["products"]
+
+
+def load_dummy_data() -> dict:
+    settings = get_settings()
+    base_url = settings.catalog_source_url
+
+    if not base_url:
+        raise RuntimeError("catalog_source_url is not configured (set CATALOG_SOURCE_URL)")
+
     db = mongo.db
-    
+
     # Clear existing data
     db.categories.delete_many({})
     db.products.delete_many({})
-    
-    # Create categories
-    categories = [
-        {"name": "Electronics", "slug": "electronics"},
-        {"name": "Clothing", "slug": "clothing"},
-        {"name": "Books", "slug": "books"},
-        {"name": "Home", "slug": "home"}
-    ]
-    
+
+    with httpx.Client(timeout=30) as client:
+        remote_categories = _fetch_categories(client, base_url)
+        remote_products = _fetch_all_products(client, base_url)
+
+    categories = [{"name": cat["name"], "slug": cat["slug"]} for cat in remote_categories]
+
     result = db.categories.insert_many(categories)
     cat_ids = {cat["slug"]: _id for cat, _id in zip(categories, result.inserted_ids)}
-    logger.info(f"Created {len(cat_ids)} categories")
-    
-    # Create products using category IDs
+    logger.info("seed: created %s categories", len(cat_ids))
+
     products = [
         {
-            "name": "Wireless Bluetooth Headphones",
-            "category_id": cat_ids["electronics"],
-            "price": 4999,
-            "stock": 50,
-            "description": "Premium noise-cancelling wireless headphones with 30-hour battery life"
-        },
-        {
-            "name": "USB-C Charging Cable",
-            "category_id": cat_ids["electronics"],
-            "price": 899,
-            "stock": 200,
-            "description": "Fast charging USB-C cable, 2 meters, braided nylon"
-        },
-        {
-            "name": "Cotton T-Shirt",
-            "category_id": cat_ids["clothing"],
-            "price": 1299,
-            "stock": 100,
-            "description": "100% organic cotton, available in multiple colors"
-        },
-        {
-            "name": "Denim Jeans",
-            "category_id": cat_ids["clothing"],
-            "price": 2999,
-            "stock": 75,
-            "description": "Classic fit denim jeans, premium quality"
-        },
-        {
-            "name": "Python Programming Guide",
-            "category_id": cat_ids["books"],
-            "price": 3499,
-            "stock": 30,
-            "description": "Comprehensive guide to Python programming for beginners and experts"
-        },
-        {
-            "name": "Coffee Mug Set",
-            "category_id": cat_ids["home"],
-            "price": 1599,
-            "stock": 150,
-            "description": "Ceramic coffee mug set of 4, dishwasher safe"
+            "name": p["title"],
+            "category_id": cat_ids[p["category"]],
+            "price": round(p["price"] * 100),
+            "stock": p["stock"],
+            "description": p["description"],
+            "brand": p.get("brand"),
+            "sku": p.get("sku"),
+            "rating": p.get("rating"),
+            "discount_percentage": p.get("discountPercentage"),
+            "tags": p.get("tags", []),
+            "thumbnail": p.get("thumbnail"),
+            "images": p.get("images", []),
+            "warranty_information": p.get("warrantyInformation"),
+            "shipping_information": p.get("shippingInformation"),
+            "return_policy": p.get("returnPolicy"),
+            "minimum_order_quantity": p.get("minimumOrderQuantity"),
         }
+        for p in remote_products
+        if p["category"] in cat_ids
     ]
-    
+
     result = db.products.insert_many(products)
-    logger.info(f"Created {len(result.inserted_ids)} products")
-    
+    logger.info("seed: created %s products", len(result.inserted_ids))
+
     return {"categories": len(cat_ids), "products": len(result.inserted_ids)}
+
+
+def run() -> None:
+    summary = load_dummy_data()
+    logger.info("seed complete: %s", summary)

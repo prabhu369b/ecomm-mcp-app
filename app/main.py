@@ -10,7 +10,6 @@ from app.modules.mcp.server import mcp_server
 from app.shared.exception_handler import register_handler
 from app.core.logger import Logger
 from app.modules.product.router import router as product_router
-from app.modules.product_v2.router import router as product_v2_router
 from app.modules.cart.router import router as cart_router
 from app.modules.order.router import router as order_router
 
@@ -34,7 +33,6 @@ app.include_router(oauth_router, prefix="/oauth", tags=["OAuth"])
 app.include_router(well_known_router, tags=["OAuth Discovery"])
 
 app.include_router(product_router, prefix="/products", tags=["Products"])
-app.include_router(product_v2_router, prefix="/v2/products", tags=["Products v2"])
 app.include_router(cart_router, prefix="/cart", tags=["Cart"])
 app.include_router(order_router, prefix="/orders", tags=["Orders"])
 

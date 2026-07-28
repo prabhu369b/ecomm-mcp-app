@@ -1,5 +1,5 @@
 from functools import lru_cache
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,19 +51,9 @@ class Settings(BaseSettings):
     log: LoggerConfig = Field(default_factory=LoggerConfig)
     jwt: JWTConfig
 
-    # Which product catalog implementation is active: "v1" (original fixture
-    # schema) or "v2" (extended catalog schema). Lets callers (MCP tools, etc.)
-    # switch without code changes.
-    catalog_version: str = "v1"
-
-    # Base URL of the external catalog source used to seed the v2 product
+    # Base URL of the external catalog source used to seed the product
     # collection. Left blank by default — set in .env for the seed script.
     catalog_source_url: str = ""
-
-    @field_validator("catalog_version")
-    @classmethod
-    def normalize_catalog_version(cls, value: str) -> str:
-        return value.strip().lower()
 
     model_config = SettingsConfigDict(
         env_file=".env",
