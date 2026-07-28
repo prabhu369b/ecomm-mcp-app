@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Search01Icon, ShoppingCart01Icon } from '@hugeicons/core-free-icons';
+import { Search01Icon } from '@hugeicons/core-free-icons';
+import { ProductCard } from '@ecom/ui-kit';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { StarRating } from '@/components/ui/star-rating';
 import { callApi } from '@/utils/api';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuthStore } from '@/stores/authStore';
@@ -48,74 +47,22 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-function formatPrice(cents: number): string {
-  return (cents / 100).toFixed(2);
-}
-
-function ProductCard({ product }: { product: ProductResponse }) {
+function ProductGridCard({ product }: { product: ProductResponse }) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const addToCart = useAddToCart();
 
-  const hasDiscount = !!product.discount_percentage && product.discount_percentage > 0;
-  const originalPrice = hasDiscount
-    ? product.price / (1 - (product.discount_percentage as number) / 100)
-    : null;
-
   return (
-    <Card className="flex flex-col overflow-hidden border-border/70 py-0">
-      <div className="relative aspect-square w-full shrink-0 bg-white">
-        {product.thumbnail ? (
-          <img
-            src={product.thumbnail}
-            alt={product.name}
-            loading="lazy"
-            className="size-full object-contain p-2"
-          />
-        ) : (
-          <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
-            No image
-          </div>
-        )}
-        {hasDiscount && (
-          <span className="absolute left-1.5 top-1.5 rounded-full bg-destructive px-1.5 py-0.5 text-[0.6rem] font-semibold text-destructive-foreground">
-            -{Math.round(product.discount_percentage as number)}%
-          </span>
-        )}
-      </div>
-
-      <CardContent className="flex flex-col gap-1 p-2.5 pb-4">
-        <h2 className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
-          {product.name}
-        </h2>
-
-        {product.rating != null && <StarRating rating={product.rating} size={11} />}
-
-        <div className="mt-auto flex items-baseline gap-1.5 pt-1">
-          <span className="text-sm font-semibold text-foreground">${formatPrice(product.price)}</span>
-          {originalPrice && (
-            <span className="text-[0.7rem] text-muted-foreground line-through">
-              ${formatPrice(Math.round(originalPrice))}
-            </span>
-          )}
-        </div>
-
-        <Button
-          size="default"
-          className="mt-1 w-full"
-          disabled={product.stock <= 0 || addToCart.isPending}
-          onClick={() => {
-            if (!accessToken) {
-              window.location.assign(`/app/login?next=${encodeURIComponent(window.location.href)}`);
-              return;
-            }
-            addToCart.mutate({ productId: product.id, qty: 1 });
-          }}
-        >
-          <HugeiconsIcon icon={ShoppingCart01Icon} size={13} />
-          Add to cart
-        </Button>
-      </CardContent>
-    </Card>
+    <ProductCard
+      product={product}
+      addToCartPending={addToCart.isPending}
+      onAddToCart={() => {
+        if (!accessToken) {
+          window.location.assign(`/app/login?next=${encodeURIComponent(window.location.href)}`);
+          return;
+        }
+        addToCart.mutate({ productId: product.id, qty: 1 });
+      }}
+    />
   );
 }
 
@@ -168,7 +115,7 @@ function HomePage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
         {data?.items.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductGridCard key={product.id} product={product} />
         ))}
       </div>
 

@@ -14,3 +14,6 @@ wheels/
 
 # Logger
 .log/
+
+# Node
+node_modules/

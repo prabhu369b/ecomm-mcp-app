@@ -21,7 +21,10 @@ export default defineConfig({
     tailwindcss()
   ],
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') }
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@ecom/ui-kit': path.resolve(__dirname, '../packages/ui-kit/src')
+    }
   },
   base: '/app/',
   server: {

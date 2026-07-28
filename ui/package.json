@@ -1,0 +1,29 @@
+{
+  "name": "ecom-mcp-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP App UI for the Ecom MCP server (Python/FastMCP backend)",
+  "scripts": {
+    "watch": "cross-env INPUT=mcp-app.html vite build --watch",
+    "build": "tsc --noEmit && cross-env INPUT=mcp-app.html vite build"
+  },
+  "dependencies": {
+    "@ecom/ui-kit": "workspace:*",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "cross-env": "^10.1.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vite-plugin-singlefile": "^2.3.0"
+  }
+}

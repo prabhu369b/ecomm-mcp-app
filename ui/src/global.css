@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+
+  --background: oklch(0.99 0.003 90);
+  --foreground: oklch(0.22 0.02 265);
+  --border: oklch(0.9 0.01 265);
+  --primary: oklch(0.55 0.16 165);
+  --primary-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.96 0.008 90);
+  --muted-foreground: oklch(0.5 0.02 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.02 265);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-text-md-size: 1rem;
+  --font-text-md-line-height: 1.5;
+}
+
+.dark {
+  --background: oklch(0.17 0.015 265);
+  --foreground: oklch(0.96 0.005 90);
+  --border: oklch(1 0 0 / 10%);
+  --primary: oklch(0.68 0.17 165);
+  --primary-foreground: oklch(0.14 0.02 165);
+  --muted: oklch(0.24 0.015 265);
+  --muted-foreground: oklch(0.68 0.02 265);
+  --card: oklch(0.21 0.018 265);
+  --card-foreground: oklch(0.96 0.005 90);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.14 0.02 165);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--font-text-md-size);
+  line-height: var(--font-text-md-line-height);
+  color: var(--foreground);
+  background: var(--background);
+}
