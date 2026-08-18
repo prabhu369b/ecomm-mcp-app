@@ -2,6 +2,7 @@ from contextlib import AsyncExitStack, asynccontextmanager
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.lifespan import lifespan
 from app.modules.auth.router import router as auth_router
 from app.modules.auth.oauth.router import router as oauth_router
@@ -25,6 +26,19 @@ async def combined_lifespan(app: FastAPI):
         yield
 
 app = FastAPI(lifespan=combined_lifespan)
+
+# Dev-only: with `ui/` run via its own vite dev server (localhost:5176)
+# instead of the built dist bundle served from resources.py, the MCP App
+# UI drives OAuth DCR/token requests straight from the browser against
+# this server — without CORS the preflight 405s and the app silently
+# never persists client registration, so every connect attempt looks
+# like a fresh, undetected OAuth flow.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5176"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 register_handler(app)
 
